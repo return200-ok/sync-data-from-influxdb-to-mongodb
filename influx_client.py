@@ -157,7 +157,11 @@ class InfluxClient:
     def query_response_to_json(self, query):
         query_api = self._client.query_api()
         result = query_api.query(org=self._org, query=query)
-        return result.to_json(indent=5)
+        results = []
+        for table in result:
+            for record in table.records:
+                results.append((record.values))
+        return results 
     
     '''
     Method called delete_data used to delete data 
@@ -175,19 +179,21 @@ class InfluxClient:
 
  
 client = InfluxClient(influx_server, influx_token, org_name, bucket_name)
-query = 'from(bucket: "test") |> range(start: -24h)'
+query = 'from(bucket: "test") |> range(start: -7d)'
 start_time = "2022-11-10T08:26:51.098Z"
 stop_time = "2022-11-18T00:00:00.098Z"
 tags = {"stock": "MSFT", "stock_id": "abc789"}
 fields = {"Open": 68, "High": 69.38, "Low": 60.13,}
 timestamp = int(time())
 data_point = InfluxPoint(measurement, tags, fields, timestamp)
+r = client.query_response_to_json(query)
 
 # print(data_point._point)
 # client.query_data(query)
+# print(type(r))
 # client.check_connection()
 # client.check_query(query)
-client.check_write()
+# client.check_write()
 # client.delete_data(start_time, stop_time, measurement)
 # client.write_data(data_point._point)
 
