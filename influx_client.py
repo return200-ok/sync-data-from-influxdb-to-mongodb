@@ -4,38 +4,11 @@ import os
 from datetime import datetime, timedelta
 from time import time
 
-import rfc3339
-from dotenv import load_dotenv
 from influxdb_client import Dialect, InfluxDBClient, Point
 from influxdb_client.client.write_api import ASYNCHRONOUS, SYNCHRONOUS
 from influxdb_client.rest import ApiException
 
-# from .connection_check import Influxchecker
-
-# Load env
-load_dotenv()
-
-Name                  = "mongofluxd"
-Version               = "1.2.2"
-mongoUrlDefault       = "mongodb://localhost:27017"
-influxUrlDefault      = "http://localhost:8086"
-influxClientsDefault  = 10
-influxBufferDefault   = 1000
-resumeNameDefault     = "default"
-gtmChannelSizeDefault = 512
-
-influx_token = os.getenv('INFLUX_TOKEN')
-influx_server = os.getenv('INFLUX_DB')
-org_name = os.getenv('INFLUX_ORG')
-bucket_name = os.getenv('BUCKET_NAME')
-measurement = os.getenv('MEASUREMENT')
-
-def get_date_string(date_object):
-  return rfc3339.rfc3339(date_object)
-
-# log_file = get_date_string(datetime.now())+'.log'
-# logging.basicConfig(filename=log_file, level=logging.DEBUG, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-
+logger = logging.getLogger(__name__)
 
 class InfluxPoint:
     
@@ -102,7 +75,7 @@ class InfluxClient:
         except ApiException as e:
             # missing credentials
             if e.status == 404:
-                raise Exception(f"The specified token doesn't have sufficient credentials to read from '{bucket}' "
+                raise Exception(f"The specified token doesn't have sufficient credentials to read from '{self._bucket}' "
                                 f"or specified bucket doesn't exists.") from e
             raise
         print("ok")
@@ -115,6 +88,7 @@ class InfluxClient:
         except ApiException as e:
             # bucket does not exist
             if e.status == 404:
+                logging.exception("The specified bucket does not exist.")
                 raise Exception(f"The specified bucket does not exist.") from e
             # insufficient permissions
             if e.status == 403:
@@ -178,15 +152,15 @@ class InfluxClient:
 
 
  
-client = InfluxClient(influx_server, influx_token, org_name, bucket_name)
-query = 'from(bucket: "test") |> range(start: -7d)'
-start_time = "2022-11-10T08:26:51.098Z"
-stop_time = "2022-11-18T00:00:00.098Z"
-tags = {"stock": "MSFT", "stock_id": "abc789"}
-fields = {"Open": 68, "High": 69.38, "Low": 60.13,}
-timestamp = int(time())
-data_point = InfluxPoint(measurement, tags, fields, timestamp)
-r = client.query_response_to_json(query)
+# client = InfluxClient(influx_server, influx_token, org_name, bucket_name)
+# query = 'from(bucket: "test") |> range(start: -7d)'
+# start_time = "2022-11-10T08:26:51.098Z"
+# stop_time = "2022-11-18T00:00:00.098Z"
+# tags = {"stock": "MSFT", "stock_id": "abc789"}
+# fields = {"Open": 68, "High": 69.38, "Low": 60.13,}
+# timestamp = int(time())
+# data_point = InfluxPoint(measurement, tags, fields, timestamp)
+# r = client.query_response_to_json(query)
 
 # print(data_point._point)
 # client.query_data(query)

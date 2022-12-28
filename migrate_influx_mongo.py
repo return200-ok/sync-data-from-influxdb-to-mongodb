@@ -23,7 +23,5 @@ influx_client = InfluxClient(influx_server, influx_token, org_name, bucket_name)
 mongo_client = MongoDB(collection, database, url, port)
 
 data_point = influx_client.query_response_to_json(query)
-# print(type(data_point))
 for mongo_document in data_point:
     mongo_client.insert_item(mongo_document)
-    # print(mongo_document)
