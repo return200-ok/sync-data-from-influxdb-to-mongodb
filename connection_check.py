@@ -59,3 +59,8 @@ with InfluxDBClient(url=url, token=token, org=org) as client:
     check_query()
     check_write()
     pass
+    
+    
+    
+    
+    
